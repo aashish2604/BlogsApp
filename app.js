@@ -1,22 +1,73 @@
 const express=require('express');
+const mongoose =require('mongoose'); 
+const Blog=require('./model/blogs');
+
+//express app
 const app=express();
 
-app.listen(3000);
+// connect to mongoDB
+const dbUri='mongodb+srv://sample1:test123@nodecluster.drbwr.mongodb.net/node-tuts?retryWrites=true&w=majority';
+mongoose.connect(dbUri,{useNewUrlParser: true,useUnifiedTopology:true})
+.then((result)=> app.listen(3000))
+.catch((reason)=> console.log(reason));
 
 //register view engine
 app.set('view engine','ejs');
 
-app.get('/',function(req,res){
-    const blogs=[
-        {title: 'Title 1',snippet: 'Some  sefsefhse fefkhaohfaeof sefefuegfiaf esifuliugsueizf' },
-        {title: 'Title 2',snippet: 'sefseoifv zvdilurghvxrovz seohhz[wiehcosevbzsebv sixdfhczo' },
-        {title: 'Title 3',snippet: 'eflszsebfuilks edvzlsebkd;zosbczs dv zusedczios;eziosehdio;fvzosi;hdv' },
-        {title: 'Title 4',snippet: 'ze;hsfzso;e fsed;seiohfiszepfawpoebvser dgvlzslehfz;fizsrhfdorhgbtd drkvjxdrghvl' }
-    ]
-    res.render('index', {
-        title: 'Home Page',
-        blogs
+//listen for request
+app.use(express.static('public'));
+
+app.use((req,res,next)=>{
+    console.log('new req has been made')
+    console.log('host: ',req.hostname)
+    console.log('path: ',req.path)
+    console.log('method: ',req.method)
+    next();
+});
+
+app.get('/add-blogs',(req,res)=>{
+    const blog=new Blog({
+        title: 'blog 2',
+        snippet: 'Adding a new blog',
+        body: 'Some of the things which are used in the world are absolutely useless just like ruby on rails sfsefpjsef'
     });
+    blog.save()
+    .then((response)=>{
+        res.send(response)
+    })
+    .catch((err)=>console.log(err))
+});
+
+app.get('/all-blogs',(req,res)=>{
+    Blog.find()
+    .then((result)=>{
+        res.send(result)
+    })
+    .catch((err)=>console.log(err))
+});
+
+app.get('/find-by-id',(req,res)=>{
+    Blog.findById("62dec158f7f0f5616e8c9169")
+    .then((result)=>{
+        res.send(result)
+    })
+    .catch((err)=>console.log(err))
+});
+
+app.get('/',function(req,res){
+    
+    res.redirect('/blogs')
+});
+
+app.get('/blogs',(req,res)=>{
+    Blog.find().sort({createdAt: -1})
+    .then((response)=>{
+        res.render('index',{
+            title: 'Home',
+            blogs: response
+        })
+    })
+    .catch((err)=>console.log(err))
 });
 
 app.get('/about',(req,res)=> {
