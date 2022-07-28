@@ -1,3 +1,4 @@
+const { urlencoded } = require('express');
 const express=require('express');
 const mongoose =require('mongoose'); 
 const Blog=require('./model/blogs');
@@ -16,6 +17,8 @@ app.set('view engine','ejs');
 
 //listen for request
 app.use(express.static('public'));
+//parsing the request data to json
+app.use(express.urlencoded({extended:true}));
 
 app.use((req,res,next)=>{
     console.log('new req has been made')
@@ -27,8 +30,8 @@ app.use((req,res,next)=>{
 
 app.get('/add-blogs',(req,res)=>{
     const blog=new Blog({
-        title: 'blog 2',
-        snippet: 'Adding a new blog',
+        title: 'blog 3',
+        snippet: 'Adding another blog',
         body: 'Some of the things which are used in the world are absolutely useless just like ruby on rails sfsefpjsef'
     });
     blog.save()
@@ -75,11 +78,37 @@ app.get('/about',(req,res)=> {
 })
 
 app.get('/blogs/create',(req,res)=>{
-    res.render('create_blogs',{title: 'Create Blogs'});
+    res.render('create',{title: 'Create Blogs'});
 })
 
 app.get('/about-us',(req,res)=>{
     res.redirect('/about');
+})
+
+app.get('/blogs/:id',(req,res)=>{
+    const id=req.params.id;
+    Blog.findById(id)
+    .then((response)=>{
+        res.render('blog_details',{title: "Blog details",blog: response})
+    })
+    .catch((err)=>console.log(err))
+})
+
+app.post('/blogs',(req,res)=>{
+    console.log(req.body);
+    const blog=new Blog(req.body);
+    blog.save()
+    .then((result)=>res.redirect('/blogs'))
+    .catch((err)=>console.log(err))
+})
+
+app.delete('/blogs/:id',(req,res)=>{
+    const id =req.params.id;
+    Blog.findByIdAndDelete(id)
+    .then((result)=>{
+        res.json({redirect: '/blogs'});
+    })
+    .catch((err)=>{console.log(err)})
 })
 
 app.use((req,res)=>{
