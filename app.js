@@ -91,7 +91,7 @@ app.get('/blogs/:id',(req,res)=>{
     .then((response)=>{
         res.render('blog_details',{title: "Blog details",blog: response})
     })
-    .catch((err)=>console.log(err))
+    .catch((err)=>res.status(404).render('404',{title: '404'}))
 })
 
 app.post('/blogs',(req,res)=>{
